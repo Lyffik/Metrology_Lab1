@@ -16,11 +16,11 @@ namespace Metrics
 
         private void button1_Click(object sender, EventArgs e)
         {
-            Parser.Program program = Parser.FindProgram(textBoxSourceCode.Text);
+            Parser.Program program = Parser.FindProgram(textBoxSourceCode.Text.ToLower());
             var parser = new Parser();
             var mcCabe = new McCabeMetrics();
-            int mc = mcCabe.McCabe(textBoxSourceCode.Text) + 1;
-            MessageBox.Show(mc.ToString());
+            int mc = mcCabe.McCabe(textBoxSourceCode.Text.ToLower()) + 2;
+            MessageBox.Show("Цикломатическая сложность программы = "+mc.ToString());
         }
 
         private void btnOpen_Click(object sender, EventArgs e)
@@ -48,7 +48,7 @@ namespace Metrics
             dataGridView.Rows.Clear();
             dataGridView.RowCount = 1;
 
-            Parser.Program program = Parser.FindProgram(textBoxSourceCode.Text);
+            Parser.Program program = Parser.FindProgram(textBoxSourceCode.Text.ToLower());
             if (program != null)
             {
                 McClureMetrics.CalculateComplexity(program);
@@ -102,7 +102,7 @@ namespace Metrics
             dataGridView.Rows.Clear();
             dataGridView.RowCount = 1;
 
-            Parser.Program program = Parser.FindProgram(textBoxSourceCode.Text);
+            Parser.Program program = Parser.FindProgram(textBoxSourceCode.Text.ToLower());
             var programs = new List<Parser.Program>();
             AddProgramToList(ref programs, program);
             var mcClure = new McClureMetrics();

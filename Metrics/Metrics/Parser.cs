@@ -10,15 +10,15 @@ namespace Metrics
         {
             Program result = null;
             string code = sourceCode;
-            if (code.ToLower().IndexOf("program") != -1)
+            if (code.IndexOf("program") != -1)
             {
                 result = new Program();
-                code = code.Substring(code.ToLower().IndexOf("program"));
+                code = code.Substring(code.IndexOf("program"));
                 result.Code = code;
                 result.Declaration = GetDeclaration(code);
                 result.Name = GetName(result.Declaration);
                 result.Arguments = FindArgmunets(result.Declaration);
-                code = code.Substring(code.ToLower().IndexOf("begin"));
+                code = code.Substring(code.IndexOf("begin"));
                 while (GetIndexEndOfBegin(code) != -1)
                 {
                     code = code.Substring(code.IndexOf("begin"));
@@ -37,10 +37,10 @@ namespace Metrics
             var result = new List<Program>();
             string code = sourceCode;
             string codeAfterDeclaration;
-            while (code.ToLower().IndexOf("procedure") != -1 || code.ToLower().IndexOf("function") != -1)
+            while (code.IndexOf("procedure") != -1 || code.IndexOf("function") != -1)
             {
                 var subprogram = new Program();
-                code = code.Substring(code.ToLower().IndexOf(FindSubprogramType(code)));
+                code = code.Substring(code.IndexOf(FindSubprogramType(code)));
                 subprogram.Declaration =
                     GetDeclaration(code);
                 subprogram.Arguments = FindArgmunets(subprogram.Declaration);
@@ -59,10 +59,10 @@ namespace Metrics
         private static string RemoveSubprograms(string code)
         {
             int subprogramCount = 0;
-            while ((code.ToLower().IndexOf("procedure") != -1 &&
-                    code.ToLower().IndexOf("begin") > code.ToLower().IndexOf("procedure")) ||
-                   (code.ToLower().IndexOf("function") != -1 &&
-                    code.ToLower().IndexOf("begin") > code.ToLower().IndexOf("function")))
+            while ((code.IndexOf("procedure") != -1 &&
+                    code.IndexOf("begin") > code.IndexOf("procedure")) ||
+                   (code.IndexOf("function") != -1 &&
+                    code.IndexOf("begin") > code.IndexOf("function")))
             {
                 subprogramCount++;
                 string type = FindSubprogramType(code);
@@ -72,7 +72,7 @@ namespace Metrics
             {
                 code = code.Substring(GetIndexEndOfBegin(code));
             }
-            code = code.Substring(code.ToLower().IndexOf("begin"));
+            code = code.Substring(code.IndexOf("begin"));
             return code;
         }
 
@@ -91,7 +91,7 @@ namespace Metrics
                         string name = argument.Remove(argument.IndexOf(":"));
                         foreach (string notArgument in notArguments)
                         {
-                            if (name.ToLower().IndexOf(notArgument) != -1)
+                            if (name.IndexOf(notArgument) != -1)
                             {
                                 name = name.Replace(notArgument, "");
                             }
@@ -106,7 +106,7 @@ namespace Metrics
                         string name = declaration.Remove(declaration.IndexOf(":"));
                         foreach (string notArgument in notArguments)
                         {
-                            if (name.ToLower().IndexOf(notArgument) != -1)
+                            if (name.IndexOf(notArgument) != -1)
                             {
                                 name = name.Replace(notArgument, "");
                             }
@@ -122,15 +122,15 @@ namespace Metrics
         private static string FindSubprogramType(string code)
         {
             string result;
-            if ((code.ToLower().IndexOf("function") == -1))
+            if ((code.IndexOf("function") == -1))
             {
                 result = "procedure";
             }
-            else if ((code.ToLower().IndexOf("procedure") == -1))
+            else if ((code.IndexOf("procedure") == -1))
             {
                 result = "function";
             }
-            else if (code.ToLower().IndexOf("procedure") < code.ToLower().IndexOf("function"))
+            else if (code.IndexOf("procedure") < code.IndexOf("function"))
             {
                 result = "procedure";
             }
@@ -147,15 +147,15 @@ namespace Metrics
             int result = -1;
             int beginCount = 0;
             int endCount = 0;
-            if (code.ToLower().IndexOf("begin") != -1)
+            if (code.IndexOf("begin") != -1)
             {
-                for (int i = code.ToLower().IndexOf("begin"); i < code.Length; i++)
+                for (int i = code.IndexOf("begin"); i < code.Length; i++)
                 {
-                    if (code.Substring(i).ToLower().IndexOf("begin") == 0)
+                    if (code.Substring(i).IndexOf("begin") == 0)
                     {
                         beginCount++;
                     }
-                    else if (code.Substring(i).ToLower().IndexOf("end") == 0)
+                    else if (code.Substring(i).IndexOf("end") == 0)
                     {
                         endCount++;
                     }
@@ -180,11 +180,11 @@ namespace Metrics
             string result = "";
             string subprogramType;
             code = code.Trim();
-            if (code.ToLower().IndexOf("procedure") == 0)
+            if (code.IndexOf("procedure") == 0)
             {
                 subprogramType = "procedure";
             }
-            else if (code.ToLower().IndexOf("function") == 0)
+            else if (code.IndexOf("function") == 0)
             {
                 subprogramType = "function";
             }
