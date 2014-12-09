@@ -157,7 +157,7 @@
             this.Controls.Add(this.button1);
             this.Controls.Add(this.textBoxSourceCode);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "метрики";
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

@@ -394,7 +394,8 @@ namespace Metrics
             while (i < sourceCode.Length)
             {
                 string currentCode = sourceCode.Substring(i);
-                if (currentCode.Trim().IndexOf("if") == 0)
+                
+                 if (currentCode.Trim().IndexOf("if") == 0)
                 {
                     McClureIf(ref sourceCode, ownerProgram);
                     i = 0;

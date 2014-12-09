@@ -17,10 +17,13 @@ namespace Metrics
         private void button1_Click(object sender, EventArgs e)
         {
             Parser.Program program = Parser.FindProgram(textBoxSourceCode.Text.ToLower());
-            var parser = new Parser();
+            var programs = new List<Parser.Program>();
+            AddProgramToList(ref programs, program);
+            programs.Remove(program);
             var mcCabe = new McCabeMetrics();
-            int mc = mcCabe.McCabe(textBoxSourceCode.Text.ToLower()) + 2;
-            MessageBox.Show("Цикломатическая сложность программы = "+mc.ToString());
+            mcCabe.SetSubprograms(programs);
+            int mc = mcCabe.CalculateMcCabeMetrics(program.BlockBeginEnd) + 1;
+            MessageBox.Show("Цикломатическая сложность программы = " + mc);
         }
 
         private void btnOpen_Click(object sender, EventArgs e)

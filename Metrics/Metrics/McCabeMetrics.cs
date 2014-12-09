@@ -1,7 +1,16 @@
-﻿namespace Metrics
+﻿using System.Collections.Generic;
+
+namespace Metrics
 {
     public class McCabeMetrics
     {
+        private List<Parser.Program> subprograms;
+
+        public void SetSubprograms(List<Parser.Program> subprograms)
+        {
+            this.subprograms = subprograms;
+        }
+
         private int McCabeIf(ref string sourceCode)
         {
             int result = 1;
@@ -10,7 +19,7 @@
             if (code.Trim().IndexOf("begin") == 0)
             {
                 sourceCode = sourceCode.Substring(Parser.GetIndexEndOfBegin(sourceCode));
-                result += McCabe(code.Substring(0, Parser.GetIndexEndOfBegin(code)));
+                result += CalculateMcCabeMetrics(code.Substring(0, Parser.GetIndexEndOfBegin(code)));
                 code = code.Substring(Parser.GetIndexEndOfBegin(code)).Trim();
                 if (code.Trim().IndexOf("else") == 0)
                 {
@@ -18,12 +27,12 @@
                     if (code.Trim().IndexOf("begin") == 0)
                     {
                         sourceCode = sourceCode.Substring(Parser.GetIndexEndOfBegin(sourceCode));
-                        result += McCabe(code.Substring(0, Parser.GetIndexEndOfBegin(code)));
+                        result += CalculateMcCabeMetrics(code.Substring(0, Parser.GetIndexEndOfBegin(code)));
                     }
                     else
                     {
                         sourceCode = sourceCode.Substring(sourceCode.IndexOf(";") + 1);
-                        result += McCabe(code.Substring(0, code.IndexOf(";") + 1));
+                        result += CalculateMcCabeMetrics(code.Substring(0, code.IndexOf(";") + 1));
                     }
                 }
             }
@@ -31,24 +40,24 @@
             {
                 if (code.IndexOf("else") != -1 && code.IndexOf("else") < code.IndexOf(";"))
                 {
-                    result += McCabe(code.Substring(0, code.IndexOf("else")));
+                    result += CalculateMcCabeMetrics(code.Substring(0, code.IndexOf("else")));
                     code.Substring(code.IndexOf("else") + 4);
                     sourceCode = sourceCode.Substring(sourceCode.IndexOf("else") + 4);
                     if (code.Trim().IndexOf("begin") == 0)
                     {
                         sourceCode = sourceCode.Substring(Parser.GetIndexEndOfBegin(sourceCode));
-                        result += McCabe(code.Substring(0, Parser.GetIndexEndOfBegin(code)));
+                        result += CalculateMcCabeMetrics(code.Substring(0, Parser.GetIndexEndOfBegin(code)));
                     }
                     else
                     {
                         sourceCode = sourceCode.Substring(sourceCode.IndexOf(";") + 1);
-                        result += McCabe(code.Substring(0, code.IndexOf(";") + 1));
+                        result += CalculateMcCabeMetrics(code.Substring(0, code.IndexOf(";") + 1));
                     }
                 }
                 else
                 {
                     sourceCode = sourceCode.Substring(sourceCode.IndexOf(";"));
-                    result += McCabe(code.Substring(0, code.IndexOf(";") + 1));
+                    result += CalculateMcCabeMetrics(code.Substring(0, code.IndexOf(";") + 1));
                 }
             }
             return result;
@@ -61,12 +70,12 @@
 
             if (code.Trim().IndexOf("begin") == 0)
             {
-                result += McCabe(code.Substring(0, Parser.GetIndexEndOfBegin(code)));
+                result += CalculateMcCabeMetrics(code.Substring(0, Parser.GetIndexEndOfBegin(code)));
                 sourceCode = sourceCode.Substring(Parser.GetIndexEndOfBegin(sourceCode));
             }
             else
             {
-                result += McCabe(code.Substring(0, code.IndexOf(";")));
+                result += CalculateMcCabeMetrics(code.Substring(0, code.IndexOf(";")));
                 sourceCode = sourceCode.Substring(sourceCode.IndexOf(";"));
             }
             return result;
@@ -77,7 +86,7 @@
             int result = 1;
             string code = sourceCode.Substring(sourceCode.IndexOf("repeat"));
 
-            result += McCabe(code.Substring(6).Remove(GetIndexEndOfRepeat(code)));
+            result += CalculateMcCabeMetrics(code.Substring(6).Remove(GetIndexEndOfRepeat(code)));
             sourceCode = sourceCode.Substring(GetIndexEndOfRepeat(sourceCode));
             return result;
         }
@@ -114,12 +123,12 @@
 
             if (code.Trim().IndexOf("begin") == 0)
             {
-                result += McCabe(code.Substring(0, Parser.GetIndexEndOfBegin(code)));
+                result += CalculateMcCabeMetrics(code.Substring(0, Parser.GetIndexEndOfBegin(code)));
                 sourceCode = sourceCode.Substring(Parser.GetIndexEndOfBegin(sourceCode));
             }
             else
             {
-                result += McCabe(code.Substring(0, code.IndexOf(";")));
+                result += CalculateMcCabeMetrics(code.Substring(0, code.IndexOf(";")));
                 sourceCode = sourceCode.Substring(sourceCode.IndexOf(";"));
             }
             return result;
@@ -158,7 +167,7 @@
                                 i += currentCode.IndexOf(";");
                             }
                         }
-                        result += McCabe(codeAfterValue) + 1;
+                        result += CalculateMcCabeMetrics(codeAfterValue) + 1;
                     }
                     else
                     {
@@ -175,7 +184,7 @@
                                 codeAfterElse = codeAfterElse.Substring(0, codeAfterElse.IndexOf(";"));
                                 i += currentCode.IndexOf(";");
                             }
-                            result += McCabe(codeAfterElse) + 1;
+                            result += CalculateMcCabeMetrics(codeAfterElse);
                         }
                         else
                         {
@@ -189,40 +198,69 @@
                     break;
                 }
             }
-            return result - 1;
+            return result;
         }
 
-        public int McCabe(string sourceCode)
+
+        public int CalculateMcCabeMetrics(string sourceCode)
         {
             int result = 0;
             int i = 0;
             while (i < sourceCode.Length)
             {
-                if (sourceCode.Substring(i).Trim().IndexOf("if") == 0)
+                string currentCode = sourceCode.Substring(i);
+                string currentLine = "";
+                if (currentCode.IndexOf("\r\n") != -1)
+                {
+                    currentLine = currentCode.Remove(currentCode.IndexOf("\r\n"));
+                }
+                bool isFind = false;
+                foreach (Parser.Program subprogram in subprograms)
+                {
+                    if (currentLine.IndexOf(subprogram.Name) != -1)
+                    {
+                        result += CalculateMcCabeMetrics(subprogram.BlockBeginEnd);
+                        sourceCode = sourceCode.Substring(sourceCode.IndexOf(subprogram.Name) + subprogram.Name.Length);
+                        isFind = true;
+                    }
+                }
+                if (isFind)
+                {
+                    i = 0;
+                }
+                else if (currentLine.IndexOf("\'") != -1)
+                {
+                    if (currentCode.LastIndexOf("\'") != -1)
+                    {
+                        sourceCode = sourceCode.Substring(currentLine.Length);
+                        i = 0;
+                    }
+                }
+                else if (currentCode.Trim().IndexOf("if") == 0)
                 {
                     sourceCode = sourceCode.Substring(sourceCode.IndexOf("if") + 2);
                     result += McCabeIf(ref sourceCode);
                     i = 0;
                 }
-                else if (sourceCode.Substring(i).Trim().IndexOf("while") == 0)
+                else if (currentCode.Trim().IndexOf("while") == 0)
                 {
                     sourceCode = sourceCode.Substring(sourceCode.IndexOf("while"));
                     result += McCabeWhile(ref sourceCode);
                     i = 0;
                 }
-                else if (sourceCode.Substring(i).Trim().IndexOf("repeat") == 0)
+                else if (currentCode.Trim().IndexOf("repeat") == 0)
                 {
                     sourceCode = sourceCode.Substring(sourceCode.IndexOf("repeat"));
                     result += McCabeRepeat(ref sourceCode);
                     i = 0;
                 }
-                else if (sourceCode.Substring(i).Trim().IndexOf("for") == 0)
+                else if (currentCode.Trim().IndexOf("for") == 0)
                 {
                     sourceCode = sourceCode.Substring(sourceCode.IndexOf("for"));
                     result += McCabeFor(ref sourceCode);
                     i = 0;
                 }
-                else if (sourceCode.Substring(i).Trim().IndexOf("case") == 0)
+                else if (currentCode.Trim().IndexOf("case") == 0)
                 {
                     sourceCode = sourceCode.Substring(sourceCode.IndexOf("case"));
                     result += McCabeCase(ref sourceCode);
